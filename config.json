@@ -1,0 +1,16 @@
+{
+  "bucket": "image-service",
+  "original": {
+      "directory": "/original"
+  },
+  "resizes": [
+    {
+      "size": "300x0",
+      "directory": "/resized/300x0"    
+    },
+    {
+      "size": "600x600",
+      "directory": "/resized/600x600"
+    }
+  ]
+}

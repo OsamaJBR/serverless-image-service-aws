@@ -1,0 +1,13 @@
+{
+    "production": {
+       "events": [{
+            "function": "main.lambda_handler",
+            "event_source": {
+                  "arn":  "arn:aws:s3:::image-service-delme",
+                  "events": [
+                    "s3:ObjectCreated:*" 
+                  ]
+               }
+            }]
+    }
+}
