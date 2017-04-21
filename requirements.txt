@@ -1,5 +1,5 @@
-ConfigParser
+configparser
+zappa
 logging
-urllib
 Image
 boto
