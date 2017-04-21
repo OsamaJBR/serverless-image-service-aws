@@ -29,3 +29,6 @@ $ zappa deploy staging
 # How to test
 - Upload an image on S3
 - Wait a second, you should find a new folder in the bucket that contains new sizes.
+
+# To Do
+- Add watermark
