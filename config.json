@@ -1,9 +1,9 @@
 {
-  "bucket": "image-service",
+  "bucket": "aw-image-service-stg",
   "original": {
       "directory": "/original"
   },
-  "resizes": [
+  "sizes": [
     {
       "size": "300x0",
       "directory": "/resized/300x0"    

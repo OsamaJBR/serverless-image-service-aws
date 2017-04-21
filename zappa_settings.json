@@ -3,9 +3,9 @@
        "events": [{
             "function": "main.lambda_handler",
             "event_source": {
-                  "arn":  "arn:aws:s3:::image-service-delme",
+                  "arn":  "arn:aws:s3:::aw-image-service-stg",
                   "events": [
-                    "s3:ObjectCreated:*" 
+                    "s3:ObjectCreated:Put" 
                   ]
                }
             }]
