@@ -1,16 +1,14 @@
 {
-  "bucket": "aw-image-service-stg",
-  "original": {
-      "directory": "/original"
-  },
+  "resized_bucket": "aw-image-service-resized",
+  "originals_bucket": "aw-image-service-originals",
   "sizes": [
     {
       "size": "300x0",
-      "directory": "/resized/300x0"    
+      "directory": "resized/300x0"    
     },
     {
       "size": "600x600",
-      "directory": "/resized/600x600"
+      "directory": "resized/600x600"
     }
   ]
 }

@@ -1,13 +1,17 @@
 {
-    "production": {
-       "events": [{
+    "develop": {
+        "events": [{
             "function": "main.lambda_handler",
             "event_source": {
-                  "arn":  "arn:aws:s3:::aw-image-service-stg",
+                  "arn":  "arn:aws:s3:::aw-image-service-originals",
                   "events": [
-                    "s3:ObjectCreated:Put" 
+                    "s3:ObjectCreated:*" 
                   ]
                }
-            }]
+            }],
+    "keep_warm": false,
+    "apigateway_enabled" : false,
+    "memory_size" : 128,
+    "debug": false
     }
 }
