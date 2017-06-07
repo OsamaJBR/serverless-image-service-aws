@@ -1,5 +1,5 @@
 {
-  "resized_bucket": "aw-image-service-resized",
+  "resized_bucket": "aw-image-service-originals",
   "originals_bucket": "aw-image-service-originals",
   "sizes": [
     {

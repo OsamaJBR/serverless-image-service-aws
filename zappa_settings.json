@@ -5,11 +5,16 @@
             "event_source": {
                   "arn":  "arn:aws:s3:::aw-image-service-originals",
                   "events": [
-                    "s3:ObjectCreated:*" 
+                    "s3:ObjectCreated:Put" 
                   ]
-               }
+               },
+            "key_filters": [
+                {
+                    "type": "prefix",
+                    "value": "originals"
+                }]
             }],
-    "keep_warm": false,
+    "keep_warm": false, 
     "apigateway_enabled" : false,
     "memory_size" : 128,
     "debug": false
