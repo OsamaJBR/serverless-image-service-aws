@@ -1,14 +1,15 @@
 {
-  "resized_bucket": "aw-image-service-originals",
-  "originals_bucket": "aw-image-service-originals",
+  "resized_bucket": {
+    "production": "s3_input_bucket-production"
+  },
   "sizes": [
     {
-      "size": "300x0",
-      "directory": "resized/300x0"    
+      "description": "Thumbnails",
+      "size": "300x300"
     },
     {
-      "size": "600x600",
-      "directory": "resized/600x600"
+      "description": "Full Screen",
+      "size": "600x600"
     }
   ]
 }

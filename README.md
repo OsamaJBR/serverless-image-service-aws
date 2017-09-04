@@ -1,67 +1,35 @@
 # Serverless Image Service
-An AWS Lambda service that listens to S3 events, and if any image was added to a S3 bucket it will resize it to listed sizes in the configuration file.
+Simple server-less implementation for Image-Service that resizes images using AWS Lambda Function and S3 Storage.
+
+### How It Works
+Lambda function could be fired by S3::ObjectCreated events, this starts the lambda function that gets the image from s3 and resizes it to defined sizes in *config.json*.
 
 ### Notes : 
 - New resized images are public by default.
 - It only supports : jpg,gif,png,bmp
-
-# How to deploy
-
-### Clone it
+- If you want to use the same bucket for both input/output,you should filter s3 events (in zappa_settings.json).
 ```
-$ git clone git@github.com:OsamaJBR/aws-lamda-image-service.git
-$ cd aws-lamda-image-service
+"key_filters": [
+                {
+                    "type": "prefix",
+                    "value": "originals"
+                }]
 ```
-### Create VirtualEnv 
+# How To Deploy
 ```
+# Create virtualenv
 $ virtualenv env
 $ source env/bin/activate
+
+# Install Requirements 
 $ pip install -r requirements.txt
+
+# Edit the config.json, set output sizes and s3 bucket.
+# Then, change ORIGINAL_BUCKET in zappa_settings.json
+# Deploy it now.
+$ zappa deploy production
 ```
 
-
-### Initalize and Deploy Zappa project
-```
-#Edit the config.json
-{
-  "resized_bucket": "RESIZED_BUCKET",
-  "originals_bucket": "ORIGINAL_BUCKET",
-  "sizes": [
-    {
-      "size": "300x0",
-      "directory": "resized/300x0"    
-    },
-    {
-      "size": "600x600",
-      "directory": "resized/600x600"
-    }
-  ]
-}
-# Then, zappa_settings.json
-{
-    "staging": {
-        "events": [{
-            "function": "main.lambda_handler",
-            "event_source": {
-                  "arn":  "arn:aws:s3:::ORIGINAL_BUCKET",
-                  "events": [
-                    "s3:ObjectCreated:*" 
-                  ]
-               }
-            }],
-    "keep_warm": false,
-    "apigateway_enabled" : false,
-    "memory_size" : 128,
-    "debug": false
-    }
-}
-
-$ zappa deploy staging
-```
-
-# How to test
+# How To Test
 - Upload an image on S3
 - Wait a second, you should find a new folder in the resized bucket with new resized images.
-
-# To Do
-- Add watermark

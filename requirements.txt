@@ -1,5 +1,4 @@
-configparser
 zappa
 logging
 Image
-boto
+boto3s

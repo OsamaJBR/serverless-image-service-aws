@@ -1,22 +1,28 @@
 {
-    "develop": {
-        "events": [{
-            "function": "main.lambda_handler",
-            "event_source": {
-                  "arn":  "arn:aws:s3:::aw-image-service-originals",
-                  "events": [
-                    "s3:ObjectCreated:Put" 
-                  ]
-               },
-            "key_filters": [
-                {
-                    "type": "prefix",
-                    "value": "originals"
-                }]
-            }],
-    "keep_warm": false, 
-    "apigateway_enabled" : false,
-    "memory_size" : 128,
-    "debug": false
+    "production": {
+        "events": [
+            {
+                "function": "main.lambda_handler",
+                "event_source": {
+                    "arn": "arn:aws:s3:::ORIGINAL_BUCKET",
+                    "events": [
+                        "s3:ObjectCreated:*"
+                    ],
+                    "key_filters": [
+                        {
+                            "type": "prefix",
+                            "value": "originals"
+                        }
+                    ]
+                }
+            }
+        ],
+        "environment_variables": {
+            "env": "production"
+        },
+        "keep_warm": false,
+        "apigateway_enabled": false,
+        "memory_size": 128,
+        "debug": false
     }
 }

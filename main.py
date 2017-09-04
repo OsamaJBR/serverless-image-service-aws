@@ -1,27 +1,17 @@
-from ConfigParser import SafeConfigParser
-from resize import resize_handler
-import StringIO
-import logging
+#!/usr/bin/python
+from io import BytesIO
+from PIL import Image
 import urllib
 import sys
 import json
-import boto
-
-# logger
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-logging.debug("logging started")
-logger = logging.getLogger(__name__)
+import boto3
+import os
 
 # config
 config = json.loads(open('config.json').read())
-originals_bucket_name=config.get('originals_bucket')
-resized_bucket_name=config.get('resized_bucket')
+resized_bucket_name=config.get('resized_bucket')[os.environ.get('env')]
 
-ignore_folders=[size['directory'] for size in config.get('sizes')]
-
-# resize handler 
-resize = resize_handler()
-
+# MIME
 # image types
 content_types = {
     'png' : 'image/png',
@@ -31,44 +21,62 @@ content_types = {
     'gif' : 'image/gif'
 }
 
+# Functions
+def resize(size,image_content):
+    width=int(size.split('x')[0])
+    height=int(size.split('x')[1])
+    img = Image.open(image_content)
+    if width and height:
+        img = img.resize((width, height), Image.ANTIALIAS)
+    elif not height:
+        wpercent = (width / float(img.size[0]))
+        hsize = int((float(img.size[1]) * float(wpercent)))
+        img = img.resize((width, hsize), Image.ANTIALIAS)
+    elif not width:
+        hpercent = (height / float(img.size[1]))
+        wsize = int((float(img.size[0]) * float(hpercent)))
+        img = img.resize((wsize, height), Image.ANTIALIAS)
+    tmp_img = BytesIO()
+    img.save(tmp_img,'png')
+    return tmp_img
+
+def mark_media_as_ready(key):
+    # Do whatever you want to do after resizing the image
+    return True
+
 def lambda_handler(event,context):
+    print(event)
+    if not os.environ.get('env') :
+        print("env variable should be added")
+        exit
     for record in event['Records']:
         event_bucket = record['s3']['bucket']['name']
         key = urllib.unquote_plus(record['s3']['object']['key'])
-        image_type = content_types[record['s3']['object']['key'].split('.')[-1].lower()]
-        logger.info("A new image was added to %r , path= %r",event_bucket,key)
-        #Skip events that come from adding the resized images in the same bucket that sends a trigger to lambda
-        if resized_bucket_name == originals_bucket_name and any(folder in key for folder in ignore_folders ): exit(0)
+        fname, image_type = os.path.splitext(key)
+        print("A new image was added to %s, path=%s" %(event_bucket,key))
         # get image from s3
-        image_name = key
-        s3 = boto.connect_s3()
-        bucket = s3.get_bucket(event_bucket, validate=False)
-        tmp_key = bucket.new_key(key)
+        s3 = boto3.client('s3')
         # Save image into FileObject
-        image_file = StringIO.StringIO()
-        tmp_key.get_file(image_file)
-
+        image_file = BytesIO()
+        s3.download_fileobj(Bucket=event_bucket,Key=key,Fileobj=image_file)
         # do the resize 
         sizes = config.get('sizes') 
         for item in sizes:
-          size=item['size']
-          logger.info("Resizing image=%r to %r",image_name,size)
-          s3_directory=item['directory']
-          resized_image= resize.resize(size=size,image_content=image_file)
-          # Upload the new sizes to s3 again
-          bucket = s3.get_bucket(resized_bucket_name)
-          logger.info("Connected to resized bucket %r", resized_bucket_name)
-          new_k = bucket.new_key('{folder}/{fname}'.format(folder=s3_directory,fname=image_name))
-          new_k.set_contents_from_string(resized_image.getvalue())
-          new_k.make_public()
-          new_k.set_remote_metadata({'Content-Type': image_type},{},True)
-          logger.info(
-              "Size=%r should be uploaded to %r:%r",size,resized_bucket_name,
-              '{folder}/{fname}'.format(folder=s3_directory,fname=image_name)
-              )
-          resized_image.close()
-        
-        # clost the fileObject
-        image_file.close()
-
-        
+            size=item['size']
+            print("Resizing image=%s to %s" %(key,size))
+            resized_image= resize(size=size,image_content=image_file)
+            # Upload the new sizes to s3 again
+            print("New resized image size = %s " %len(resized_image.getvalue()))
+            resized_image.seek(0)
+            resized_fname=key.replace(image_type,'.%s%s' %(size,image_type))
+            s3.upload_fileobj(
+                Fileobj=resized_image,
+                Bucket=resized_bucket_name,
+                Key=resized_fname,
+                ExtraArgs={
+                    'ACL':'public-read',
+                    'ContentType' : content_types[image_type.lower().replace('.','')]
+                }
+            )
+            print("Size=%r should be uploaded to %s:%s"%(size,resized_bucket_name,key))
+            mark_media_as_ready(key)
